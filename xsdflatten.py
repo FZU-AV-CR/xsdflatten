@@ -19,8 +19,18 @@ def get_includes_from_file(filename):
 
 def get_includes_recurse(filename, include_set):
 	includes = get_includes_from_file(filename)
-	include_set.update(includes)
+	# Convert relative paths to absolute paths based on the current file's directory
+	base_dir = os.path.dirname(os.path.abspath(filename))
+	absolute_includes = []
 	for inc in includes:
+		if not os.path.isabs(inc):
+			absolute_inc = os.path.join(base_dir, inc)
+		else:
+			absolute_inc = inc
+		absolute_includes.append(absolute_inc)
+		include_set.add(absolute_inc)
+	
+	for inc in absolute_includes:
 		get_includes_recurse(inc, include_set)
 
 def get_xml_tree_from_file(filename):
