@@ -3,11 +3,19 @@ import sys
 import re
 import copy
 import os
+import argparse
 from lxml import etree
 
 def get_includes_from_file(filename):
 	pattern = re.compile('(<xs:include schemaLocation)')
-	lines = [line.strip() for line in open(filename).readlines()]
+	try:
+		with open(filename, 'r', encoding='utf-8') as f:
+			lines = [line.strip() for line in f.readlines()]
+	except UnicodeDecodeError:
+		# Fallback to default encoding if UTF-8 fails
+		with open(filename, 'r') as f:
+			lines = [line.strip() for line in f.readlines()]
+	
 	includes = [line.split('=')[1].split('"')[1] for line in lines if pattern.match(line)]
 
 	# sanity check
@@ -60,11 +68,52 @@ def flatten_file(filename):
 		for child in inc_root:
 			root.append(copy.deepcopy(child))
 
-	print(etree.tostring(root, pretty_print=True, encoding='unicode'))
+	return etree.tostring(root, pretty_print=True, encoding='unicode')
 
-def main(filename):
-	flatten_file(filename)
+def main():
+	parser = argparse.ArgumentParser(
+		description='Flatten XSD files by merging includes into a single file',
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		epilog="""Examples:
+  %(prog)s schema.xsd
+  %(prog)s --output flattened.xsd input_schema.xsd"""
+	)
 	
+	parser.add_argument('input_file', 
+					   help='Input XSD file to flatten')
+	parser.add_argument('-o', '--output',
+					   help='Output file (if not specified, prints to stdout)',
+					   metavar='FILE')
+	
+	try:
+		args = parser.parse_args()
+	except SystemExit:
+		# argparse calls sys.exit() on error, we catch it to provide custom behavior if needed
+		raise
+	
+	# Validate input file exists
+	if not os.path.isfile(args.input_file):
+		parser.error(f"Input file '{args.input_file}' does not exist or is not a file")
+	
+	# Validate input file is XSD
+	if not args.input_file.lower().endswith('.xsd'):
+		parser.error(f"Input file '{args.input_file}' does not have .xsd extension")
+	
+	try:
+		flattened_content = flatten_file(args.input_file)
+
+		if args.output:
+			with open(args.output, 'w', encoding='utf-8') as f:
+				f.write(flattened_content)
+		else:
+			print(flattened_content)
+			
+	except FileNotFoundError as e:
+		parser.error(f"File not found: {e}")
+	except etree.XMLSyntaxError as e:
+		parser.error(f"XML parsing error: {e}")
+	except Exception as e:
+		parser.error(f"Unexpected error: {e}")
 
 if __name__ == "__main__":
-	main(sys.argv[1])
+	main()

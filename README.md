@@ -1,19 +1,50 @@
 # xsdflatten
-Rudimentary python script to flatten an xsd schema into a single document. Flattened schema is printed to the console.
 
-# dependencies
-```pip install lxml```
+Python 3 script to flatten an XSD schema into a single document by merging all included schemas. The flattened schema is printed to the console.
 
-# usage
-```xsdflatten.py schema_to_flatten.xsd > flattened.xsd```
+## Installation
 
-The flattened schema is output to console. Use > to redirect it to a file of your choosing.
+Install directly from source:
+```bash
+pip3 install .
+```
 
-# troubleshooting
-If you have issues after installing lxml on Mac, you might try resetting the PATH:
+Or for development:
+```bash
+pip3 install -e .
+```
 
-Apparently, LXML Install on a Mac ends up installing it in the wrong path, so you have to reset the path using:
+After installation, you can use the `xsdflatten` command directly.
 
-```export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"```
+## Dependencies
 
-See more details: https://stackoverflow.com/questions/27008222/importerror-no-module-named-lxml-even-though-lxml-is-installed
+If installing manually, install dependencies using:
+```bash
+pip3 install -r requirements.txt
+```
+
+## Usage
+
+After installation via pip:
+```bash
+xsdflatten input_schema.xsd
+xsdflatten --output flattened.xsd input_schema.xsd
+```
+
+Or run directly without installation:
+```bash
+python3 xsdflatten.py input_schema.xsd
+python3 xsdflatten.py --output flattened.xsd input_schema.xsd
+```
+
+### Options
+
+- `input_file` - Input XSD file to flatten (required)
+- `-o, --output FILE` - Output file (if not specified, prints to stdout)
+- `-h, --help` - Show help message
+
+The script processes the main XSD file and all its includes (recursively), then outputs a single flattened XSD schema. Use `-o` parameter to save to a file or redirect stdout with `>`.
+
+## Attribution
+
+This project is based on the original tool [esunder/xsdflatten](https://github.com/esunder/xsdflatten) and is further developed and extended.
