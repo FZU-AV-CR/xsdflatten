@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import re
 import copy
+import os
 from lxml import etree
 
 def get_includes_from_file(filename):
@@ -12,7 +13,7 @@ def get_includes_from_file(filename):
 	# sanity check
 	for inc in includes:
 		if not inc.endswith('.xsd'):
-			pass #print 'There is a problem with include %s in file %s' % (inc, filename)
+			pass #print('There is a problem with include %s in file %s' % (inc, filename))
 
 	return includes
 
@@ -49,7 +50,7 @@ def flatten_file(filename):
 		for child in inc_root:
 			root.append(copy.deepcopy(child))
 
-	print etree.tostring(root, pretty_print=True)
+	print(etree.tostring(root, pretty_print=True, encoding='unicode'))
 
 def main(filename):
 	flatten_file(filename)
